@@ -40,7 +40,7 @@
               <button class="edit-btn" @click="editProduct(product, index)">
                 Edit
               </button>
-              <button class="delete-btn" @click="deleteProduct(index)">
+              <button class="delete-btn" @click="showDeleteConfirm(index)">
                 Delete
               </button>
             </td>
@@ -99,6 +99,21 @@
         </div>
       </div>
     </div>
+
+    <div v-if="showDeleteModal" class="modal">
+      <div class="modal-content">
+        <h2>Xác nhận</h2>
+        <p>Bạn có chắc chắn muốn xoá sản phẩm này?</p>
+        <div class="form-actions">
+          <button class="close-btn" @click="showDeleteModal = false">
+            Cancel
+          </button>
+          <button class="delete-confirm-btn" @click="confirmDeleteProduct">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -113,6 +128,8 @@ export default {
       editIndex: null,
       searchQuery: "",
       filteredProducts: [],
+      showDeleteModal: false,
+      deleteIndex: null,
     };
   },
   mounted() {
@@ -173,7 +190,7 @@ export default {
       if (!this.validateProduct()) return;
       if (this.editIndex !== null) {
         this.products[this.editIndex] = { ...this.newProduct };
-        this.editIndex = null; 
+        this.editIndex = null;
       } else {
         this.products.push({ ...this.newProduct });
       }
@@ -188,10 +205,18 @@ export default {
       this.editIndex = index;
       this.showAddProduct = true;
     },
-    deleteProduct(index) {
-      this.products.splice(index, 1);
-      localStorage.setItem("products", JSON.stringify(this.products));
-      this.filterProducts();
+    showDeleteConfirm(index) {
+      this.deleteIndex = index;
+      this.showDeleteModal = true;
+    },
+    confirmDeleteProduct() {
+      if (this.deleteIndex !== null) {
+        this.products.splice(this.deleteIndex, 1);
+        localStorage.setItem("products", JSON.stringify(this.products));
+        this.filterProducts();
+        this.deleteIndex = null;
+        this.showDeleteModal = false;
+      }
     },
     filterProducts() {
       this.filteredProducts = this.products.filter((product) =>
@@ -201,7 +226,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 * {
   font-family: Arial, Helvetica, sans-serif;
@@ -276,6 +300,12 @@ button {
   margin-top: 10px;
   margin-bottom: 10px;
   cursor: pointer;
+}
+.delete-confirm-btn {
+  background-color: #f44336;
+  color: white;
+  font-size: 21px;
+  width: 80px;
 }
 
 .modal {
